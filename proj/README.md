@@ -26,3 +26,10 @@ A Python application for automating the process of uploading your accepted solut
 
    ```bash
    pip install -r requirements.txt
+4. **How to Use**:
+   * To start using the project, run the following command in the terminal:
+
+  ```
+  python3 main.py
+  ```
+
