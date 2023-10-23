@@ -1,9 +1,8 @@
 # BroCode
 
-![GitHub stars](https://img.shields.io/github/stars/YourUsername/BroCode?style=flat-square)
-![GitHub forks](https://img.shields.io/github/forks/YourUsername/BroCode?style=flat-square)
-![GitHub issues](https://img.shields.io/github/issues/YourUsername/BroCode?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/YourUsername/BroCode?style=flat-square)
+Will be Adding a whole Codeforces Tools package -> like Problem Recommender, Profile Analytics
+Will also host it soon , so that it automatically uploads the new solutions after a certain number of days
+
 
 A Python application for automating the process of uploading your accepted solutions from CodeForces and AtCoder to your GitHub repository with ease.
 
