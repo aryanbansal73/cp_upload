@@ -6,6 +6,7 @@ from src.token_1 import generate_confirmation_token, confirm_token
 import os
 from flask_mail import Mail
 import re 
+import time
 
 
 import datetime
@@ -173,9 +174,8 @@ def home():
             if(i=='' or i==None):
                 cf_ids.remove(i)
         print(new_cf_id)
-        if(new_cf_id ==''):
+        if(new_cf_id =='' or new_cf_id   in cf_ids):
             return render_template('home.html' , cf_id_list =cf_ids )
-        cf_list = []
         if(len(cf_ids)==0):
             print('empty')
             cf_ids.append(new_cf_id)
