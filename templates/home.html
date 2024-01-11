@@ -4,7 +4,7 @@
 {% block content %}
 <p>Hello You have Logged in as {{ email }}</p>
 {% for ids in cf_id_list %}
-    <div>{{ids}}</div>
+        <a href="http://172.21.5.200:5000/home/{{ ids }}"class="btn btn-primary" role="button">Codeforces ID: {{ ids }}</a>
 {% endfor %}
 <form action="" method="post">
     <!-- <div class="form-group">

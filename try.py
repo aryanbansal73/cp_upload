@@ -198,7 +198,9 @@ def logout():
         return render_template("signout.html")
     else:
         return redirect(url_for("index"))
-
+@app.route('/home/<cf_id>')
+def options(cf_id):
+    return render_template('features_base.html' ,cf_id = cf_id )
 def check(email):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 
