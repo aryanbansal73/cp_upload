@@ -169,7 +169,12 @@ def home():
         user_found = records.find_one({"email": email})
         cf_ids = user_found['codeforces_id_list']
         new_cf_id =request.form.get("cf_id")
+        for i in cf_ids:
+            if(i=='' or i==None):
+                cf_ids.remove(i)
         print(new_cf_id)
+        if(new_cf_id ==''):
+            return render_template('home.html' , cf_id_list =cf_ids )
         cf_list = []
         if(len(cf_ids)==0):
             print('empty')
@@ -177,9 +182,10 @@ def home():
         else:
             cf_ids.append(new_cf_id)
             print(cf_ids)
+        
         user_found['codeforces_id_list'] = cf_ids
         records.update_one({'_id':user_found['_id']}, {'$set':user_found} )
-        return render_template('home.html')
+        return render_template('home.html' , cf_id_list =cf_ids )
 
     else:
         return redirect(url_for("login"))
