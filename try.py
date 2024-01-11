@@ -86,7 +86,7 @@ def index():
             #hash the password and encode it
             hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
             #assing them in a dictionary in key value pairs
-            user_input = {'user_name': user,'name':fullname, 'email': email, 'password': hashed ,  'confirmed': False , 'confirmed_on':None}
+            user_input = {'user_name': user,'name':fullname, 'email': email, 'password': hashed ,  'confirmed': False , 'confirmed_on':None, "codeforces_id_list": []}
             #insert it in the record collection
             records.insert_one(user_input)
             token  = generate_confirmation_token(email)
@@ -158,11 +158,35 @@ def logged_in():
     if "email" in session:
         email = session["email"]
         return render_template('logged_in.html', email=email)
+        
+
     else:
         return redirect(url_for("login"))
+@app.route('/home' ,  methods =['post' , 'get'] )
+def home():
+    if "email" in session:
+        email = session["email"]
+        user_found = records.find_one({"email": email})
+        cf_ids = user_found['codeforces_id_list']
+        new_cf_id =request.form.get("cf_id")
+        print(new_cf_id)
+        cf_list = []
+        if(len(cf_ids)==0):
+            print('empty')
+            cf_ids.append(new_cf_id)
+        else:
+            cf_ids.append(new_cf_id)
+            print(cf_ids)
+        user_found['codeforces_id_list'] = cf_ids
+        records.update_one({'_id':user_found['_id']}, {'$set':user_found} )
+        return render_template('home.html')
 
+    else:
+        return redirect(url_for("login"))
+    return render_template('home.html')
 @app.route("/logout", methods=["POST", "GET"])
 def logout():
+
     if "email" in session:
         session.pop("email", None)
         return render_template("signout.html")
