@@ -7,9 +7,16 @@ import os
 from flask_mail import Mail
 import re 
 import time
-
+# from cp_sync.main import module_func
+# sys.path.append('./')
+import sys, os.path
 
 import datetime
+dir_path = (os.path.abspath(os.path.join(os.path.dirname(__file__), ))+ '/cp_sync/')
+print(dir_path)
+sys.path.append(dir_path)
+import main 
+print(dir_path)
 from flask_mail import Message
 app = Flask(__name__)
 app.secret_key = "testing1"
@@ -25,6 +32,7 @@ load_dotenv()
 
 # Retrieve sensitive information from environment variables
 db_pass = os.getenv('db_pass')
+git_access_token =  os.getenv('git_access_token')
 
 # Ensure that the required environment variable is set
 if db_pass is None:
@@ -201,6 +209,19 @@ def logout():
 @app.route('/home/<cf_id>')
 def options(cf_id):
     return render_template('features_base.html' ,cf_id = cf_id )
+@app.route('/home/<cf_id>/sync')
+def sync_cf(cf_id):
+    if "email" in session:
+        print('on_hai')
+        #uncomment to make the func work
+        # email = session["email"]
+        # user_found = records.find_one({"email": email})
+        # main.module_func(cf_id ,  git_access_token ,  "test123")
+        return render_template('process.html')
+    else:
+        return redirect(url_for(options))
+    
+    
 def check(email):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 

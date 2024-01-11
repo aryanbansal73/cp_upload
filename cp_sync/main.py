@@ -1,12 +1,13 @@
 # import CodeChefScraper
-import CodeForcesScraper
 # import AtcoderScraper
 from time import sleep
 import logging
 from github import Github
+import CodeForcesScraper
 from github.GithubException import UnknownObjectException
 from UploadToGithub import upload_to_github
 import inspect
+
 # from multiprocessing import Process
 
 EXTENSIONS = {
@@ -130,7 +131,30 @@ def main():
         codeforces_uploader(codeforces_username, repo)
         # codeforces_process = Process(target=codeforces_uploader, args=(codeforces_username, repo))
         # codeforces_process.start()
+def module_func(codeforces_username ,access_token ,repo_name = None ):
+    if repo_name.isspace() or not repo_name:
+        repo_name = 'CP-Solutions'
 
+    g = Github(access_token)
+
+    try:
+        repo = g.get_user().get_repo(repo_name)
+
+    except UnknownObjectException:
+        repo = g.get_user().create_repo(repo_name, private=True)
+
+    # if atcoder_username:
+    #     atcoder_uploader(atcoder_username, repo)
+    #     # atcoder_process = Process(target=atcoder_uploader, args=(atcoder_username, repo))
+    #     # atcoder_process.start()
+
+    # if codechef_username:
+    #     codechef_uploader(codechef_username, repo)
+    #     # codechef_process = Process(target=codechef_uploader, args=(codechef_username, repo))
+    #     # codechef_process.start()
+
+    if codeforces_username:
+        codeforces_uploader(codeforces_username, repo)
 
 if __name__ == '__main__':
     main()
