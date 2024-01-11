@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from src.token_1 import generate_confirmation_token, confirm_token
 import os
 from flask_mail import Mail
+import re 
+
 
 import datetime
 from flask_mail import Message
@@ -55,14 +57,22 @@ def index():
     if "email" in session:
         return redirect(url_for("logged_in"))
     if request.method == "POST":
+        
         user = request.form.get("username")
         fullname = request.form.get("fullname")
         email = request.form.get("email")
         password1 = request.form.get("password1")
         password2 = request.form.get("password2")
+        if(check(email)==False):
+            message = 'The Email entered in not correct , correct and try again'
+            return render_template('index.html', message=message)
+        if(validate_password(password1)== 0):
+            message = 'Password does not meet requirements.'
+            return render_template('index.html', message=message)
         #if found in database showcase that it's found 
         user_found = records.find_one({"user_name": user})
         email_found = records.find_one({"email": email})
+
         if user_found:
             message = 'There already is a user by that name'
             return render_template('index.html', message=message)
@@ -121,7 +131,9 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-
+        if(check(email)==False):
+            message = 'The Email entered in not correct , correct and try again'
+            return render_template('index.html', message=message)
         #check if email exists in database
         email_found = records.find_one({"email": email})
         if email_found:
@@ -157,8 +169,39 @@ def logout():
     else:
         return redirect(url_for("index"))
 
+def check(email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 
-
+    # pass the regular expression
+    # and the string into the fullmatch() method
+    if(re.fullmatch(regex, email)):
+        return 1
+ 
+    else:
+        return 0
+def validate_password(password):
+    # Check if the password has at least 8 characters
+    if len(password) < 8:
+        return False
+    
+    # Check if the password contains at least one uppercase letter
+    if not re.search(r'[A-Z]', password):
+        return False
+    
+    # Check if the password contains at least one lowercase letter
+    if not re.search(r'[a-z]', password):
+        return False
+    
+    # Check if the password contains at least one digit
+    if not re.search(r'\d', password):
+        return False
+    
+    # Check if the password contains at least one special character
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return False
+    
+    # If all the conditions are met, the password is valid
+    return True
 def send_email(to, subject, template):
     msg = Message(
         subject,
