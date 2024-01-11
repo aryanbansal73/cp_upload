@@ -12,7 +12,7 @@ import time
 import sys, os.path
 
 import datetime
-dir_path = (os.path.abspath(os.path.join(os.path.dirname(__file__), ))+ '/cp_sync/')
+dir_path = (os.path.abspath(os.path.join(os.path.dirname(__file__), ))+ '/cp_funcs/')
 print(dir_path)
 sys.path.append(dir_path)
 import main 
