@@ -40,6 +40,7 @@ if db_pass is None:
 else:
     print(db_pass)
 # MongoDB connection setup
+
 connection_url = f"mongodb+srv://whathwaye:{db_pass}@cluster0.gsuq52o.mongodb.net/?retryWrites=true&w=majority"
 db_name = 'test1'
 client = pymongo.MongoClient(connection_url)

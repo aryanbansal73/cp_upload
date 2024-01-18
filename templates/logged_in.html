@@ -3,13 +3,7 @@
 
 {% block content %}
 <p>Hello You have Logged in as  g {{ email }}</p>
-<form action="" method="post">
-<script>
-    // Use setTimeout to delay the redirection to the home route
-    setTimeout(function() {
-        window.location.href = "{{ url_for('home') }}";
-    }, 2000);  // 2000 milliseconds = 2 seconds
-</script>
+
     <!-- <div class="form-group">
       <label for="UserName">User name</label>
       <input name="username" class="form-control" id="inputUserName" aria-describedby="emailHelp" placeholder="Enter user name">

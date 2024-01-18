@@ -120,4 +120,9 @@ def make_user_prob_vector(user_prob_matrix):
             user_problem_vector[i] += w
     user_problem_vector = [w/len(user_prob_matrix) for w in user_problem_vector]
     return user_problem_vector
-
+def dot(u, v):
+  assert len(u) == len(v)
+  sum = 0
+  for i in range(len(u)):
+    sum +=( u[i] * v[i] )*10
+  return sum
