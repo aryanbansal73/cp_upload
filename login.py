@@ -15,22 +15,22 @@ from dotenv import load_dotenv
 
 
 
-main_blueprint = Blueprint('main', __name__)
+login_blueprint = Blueprint('login', __name__)
 
 
-# main_blueprint.config['MAIL_SERVER']='smtp.gmail.com'
-# main_blueprint.config['MAIL_PORT'] = 465
-# main_blueprint.config['MAIL_USERNAME'] = os.getenv("gmail_id")
-# main_blueprint.config['MAIL_PASSWORD'] = os.getenv('gmail_pass')
-# main_blueprint.config['MAIL_USE_TLS'] = False
-# main_blueprint.config['MAIL_USE_SSL'] = True
+# login_blueprint.config['MAIL_SERVER']='smtp.gmail.com'
+# login_blueprint.config['MAIL_PORT'] = 465
+# login_blueprint.config['MAIL_USERNAME'] = os.getenv("gmail_id")
+# login_blueprint.config['MAIL_PASSWORD'] = os.getenv('gmail_pass')
+# login_blueprint.config['MAIL_USE_TLS'] = False
+# login_blueprint.config['MAIL_USE_SSL'] = True
 records =  connect_db()
-@main_blueprint.route("/", methods=['post', 'get'])
+@login_blueprint.route("/", methods=['post', 'get'])
 def index():
     message = ''
     #if method post in index
     if "email" in session:
-        return redirect(url_for("logged_in"))
+        return redirect(url_for("login.logged_in"))
     if request.method == "POST":
         
         user = request.form.get("username")
@@ -66,7 +66,8 @@ def index():
             records.insert_one(user_input)
             token  = generate_confirmation_token(email)
             print(token)
-            confirm_url =  url_for('main.confirm_email' , token =  token, _external = True)
+            confirm_url =  url_for('login.confirm_email' , token =  token, _external = True)
+            # print(confirm_url)
             html = render_template('auth_mail.html', confirm_url=confirm_url)
             subject = "Please confirm your email"
             #find the new created account and its email
@@ -75,42 +76,12 @@ def index():
             flash('A confirmation email has been sent via email.', 'success')
 
             #if registered redirect to logged in as the registered user
-            return render_template('logged_in.html', email=email)
+            message ="waiting for id to be confirmed"
+            return render_template('confirm_pending.html' , message = message)
+            # return render_template('logged_in.html', email=email)
     return render_template('index.html')
 
-
-@main_blueprint.route("/login", methods=["POST", "GET"])
-def login():
-    message = 'Please login to your account'
-    if "email" in session:
-        return redirect(url_for("logged_in"))
-
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-        if(check(email)==False):
-            message = 'The Email entered in not correct , correct and try again'
-            return render_template('index.html', message=message)
-        #check if email exists in database
-        email_found = records.find_one({"email": email})
-        if email_found:
-            email_val = email_found['email']
-            passwordcheck = email_found['password']
-            #encode the password and check if it matches
-            if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
-                session["email"] = email_val
-                return redirect(url_for('logged_in'))
-            else:
-                if "email" in session:
-                    return redirect(url_for("logged_in"))
-                message = 'Wrong password'
-                return render_template('login.html', message=message)
-        else:
-            message = 'Email not found'
-            return render_template('login.html', message=message)
-    return render_template('login.html', message=message)
-
-@main_blueprint.route('/logged_in')
+@login_blueprint.route('/logged_in')
 def logged_in():
     if "email" in session:
         email = session["email"]
@@ -118,22 +89,73 @@ def logged_in():
         
 
     else:
-        return redirect(url_for("login"))
+        return redirect(url_for("login.login"))
+@login_blueprint.route("/login", methods=["POST", "GET"])
+def login():
+    message = 'Please login to your account'
+    if "email" in session:
+        return redirect(url_for("login.logged_in"))
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        if(check(email)==False):
+            message = 'The Email entered in not correct , correct and try again'
+            return render_template('index.html', message=message)
+        #check if email exists in database
+        user = records.find_one({"email": email})
 
-@main_blueprint.route("/logout", methods=["POST", "GET"])
+        if user:
+            email_val = user['email']
+            passwordcheck = user['password']
+            #encode the password and check if it matches
+            
+            if bcrypt.checkpw(password.encode('utf-8'), passwordcheck):
+                session["email"] = email_val
+                if(user["confirmed"] ==False):
+                    message ="waiting for id to be confirmed"
+                    return render_template('confirm_pending.html' , message = message)
+                else:
+                    return redirect(url_for("login.logged_in"))
+            else:
+                if "email" in session:
+                    return redirect(url_for("login.logged_in"))
+                message = 'Wrong password'
+                return render_template('login.html', message=message)
+        else:
+            message = 'Email not found'
+            return render_template('login.html', message=message)
+        
+    return render_template('login.html', message=message)
 
 
-@main_blueprint.route('/confirm/<token>')
+
+@login_blueprint.route("/logout", methods=["POST", "GET"])
+def logout():
+
+    if "email" in session:
+        session.pop("email", None)
+        return render_template("signout.html")
+    else:
+        return redirect(url_for("login.index"))
+
+
+@login_blueprint.route('/confirm/<token>')
 def confirm_email(token):
     try:
         email = confirm_token(token)
     except:
         flash('The confirmation link is invalid or has expired.', 'danger')
+        message ="The confirmation link is invalid or has expired."
+        return render_template('confirm_pending.html' , message = message)
     user =  records.find_one({"email":email})
-    print(user['confirmed'])
+    # print(user['confirmed'])
+    if(user ==None ):
+        message ="The confirmation link is invalid or has expired."
+        return render_template('confirm_pending.html' , message = message)
     if user['confirmed']:
         flash('Account already confirmed. Please login.', 'success')
-    else:
+        return render_template('logged_in.html')
+    else :
         user['confirmed'] = True 
         user['confirmed_on']= datetime.datetime.now()
         # print(user)
@@ -141,14 +163,9 @@ def confirm_email(token):
         user1 =  records.find_one({"email":email})
         print(user1)
 
-    return render_template('login.html')
-def logout():
+    return render_template('logged_in.html')
+  
 
-    if "email" in session:
-        session.pop("email", None)
-        return render_template("signout.html")
-    else:
-        return redirect(url_for("index"))
 
 def send_email(to, subject, template):
     msg = Message(
@@ -160,19 +177,6 @@ def send_email(to, subject, template):
     with current_app.app_context():
         mail = Mail()
         mail.send(msg)    
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -10,13 +10,15 @@ import time
 # from cp_sync.main import module_func
 # sys.path.append('./')
 import sys, os.path
-
-import datetime
 dir_path = (os.path.abspath(os.path.join(os.path.dirname(__file__), ))+ '/cp_funcs/')
 print(dir_path)
 sys.path.append(dir_path)
-import main 
-print(dir_path)
+import datetime
+import main
+from cp_funcs.UploadToGithub import *
+from cp_funcs  import CodeForcesScraper
+from cp_funcs import main 
+
 from flask_mail import Message
 app = Flask(__name__)
 app.secret_key = "testing1"

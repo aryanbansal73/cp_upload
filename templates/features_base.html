@@ -4,14 +4,32 @@
 {% block content %}
 <p>Hello You have Logged in as {{ cf_id }}</p>
 <h2>Click on the buttons to navigate:</h2>
-
-    <a href="http://172.21.5.200:5000/home/{{ cf_id }}/sync"class="btn btn-primary" role="button">Codeforces Sync</a>
-
-    <!-- Button 2 -->
-    <a href="http://172.21.5.200:5000/home/{{ cf_id }}/recommend"class="btn btn-primary" role="button">Codeforces recommend</a>
-
-    <!-- Button 3 -->
-    <a href="http://172.21.5.200:5000/home/{{ cf_id }}/analysis"class="btn btn-primary" role="button">Codeforces analysis</a>
-
+<script>
+    // Get the current URL
+    var currentURL = window.location.href;
+  
+    // Modify the links with the current URL
+    var syncLink = document.createElement('a');
+    syncLink.href = currentURL + "/sync";
+    syncLink.className = "btn btn-primary";
+    syncLink.role = "button";
+    syncLink.textContent = "Codeforces Sync";
+    document.body.appendChild(syncLink);
+  
+    var recommendLink = document.createElement('a');
+    recommendLink.href = currentURL + "/recommend";
+    recommendLink.className = "btn btn-primary";
+    recommendLink.role = "button";
+    recommendLink.textContent = "Codeforces Recommend";
+    document.body.appendChild(recommendLink);
+  
+    var analysisLink = document.createElement('a');
+    analysisLink.href = currentURL + "/analysis";
+    analysisLink.className = "btn btn-primary";
+    analysisLink.role = "button";
+    analysisLink.textContent = "Codeforces Analysis";
+    document.body.appendChild(analysisLink);
+  </script>
+  
 
 {% endblock %}

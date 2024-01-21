@@ -4,13 +4,15 @@ from database import connect_db
 from flask_mail import Mail
 from flask_mail import Message
 
-from login import main_blueprint
+from login import login_blueprint
+from user_page import user_blueprint
+
 app = Flask(__name__)
-app.register_blueprint(main_blueprint)
+app.register_blueprint(login_blueprint)
+app.register_blueprint(user_blueprint)
 db_pass =  os.getenv("db_pass")
 db_name  = os.getenv("db_name")
 # print('t')
-client = connect_db()
 
 # # db = client[db_name]
 # # collection_name = 'test1'

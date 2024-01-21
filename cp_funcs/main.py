@@ -62,7 +62,9 @@ def upload_solution(website, solution, repo):
                 Problem: {solution['problem_name']}
                 Link: {solution['problem_link']}
                 """
-
+        if(solution['solution'] == ""):
+            return False 
+        # print(solution)
         upload_to_github(repo, path, solution['solution'], inspect.cleandoc(problem_info))
         return True
 
@@ -75,11 +77,12 @@ def codeforces_uploader(codeforces_username, repo):
     failed_codeforces = []
     for solution in CodeForcesScraper.get_solutions(codeforces_username):
         if not upload_solution('CodeForces', solution, repo):
+            #print("hi")
             failed_codeforces.append(solution)
 
     for _ in range(3):
         if failed_codeforces:
-            sleep(180)
+            sleep(4)
 
             new_failed_codeforces = []
             for solution in CodeForcesScraper.get_solutions(codeforces_username, failed_codeforces):
@@ -89,6 +92,8 @@ def codeforces_uploader(codeforces_username, repo):
             failed_codeforces = new_failed_codeforces
 
 
+
+
 # def codechef_uploader(codechef_username, repo):
 #     for solution in CodeChefScraper.get_solutions(codechef_username):
 #         upload_solution('CodeChef', solution, repo)
@@ -96,7 +101,7 @@ def codeforces_uploader(codeforces_username, repo):
 
 # def atcoder_uploader(atcoder_username, repo):
 #     for solution in AtcoderScraper.get_solutions(atcoder_username):
-        upload_solution('Atcoder', solution, repo)
+        # upload_solution('Atcoder', solution, repo)
 
 
 def main():
@@ -124,14 +129,14 @@ def main():
 
     # if codechef_username:
     #     codechef_uploader(codechef_username, repo)
-    #     # codechef_process = Process(target=codechef_uploader, args=(codechef_username, repo))
-    #     # codechef_process.start()
+        # codechef_process = Process(target=codechef_uploader, args=(codechef_username, repo))
+        # codechef_process.start()
 
     if codeforces_username:
         codeforces_uploader(codeforces_username, repo)
         # codeforces_process = Process(target=codeforces_uploader, args=(codeforces_username, repo))
         # codeforces_process.start()
-def module_func(codeforces_username ,access_token ,repo_name = None ):
+def module_func(codeforces_username ,access_token ,repo_name = None ,  added_already = []):
     if repo_name.isspace() or not repo_name:
         repo_name = 'CP-Solutions'
 
