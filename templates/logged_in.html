@@ -18,9 +18,21 @@
     <script>
         // Use setTimeout to delay the redirection
         setTimeout(function() {
-          // Replace 'new_url' with the URL you want to redirect to
-          window.location.href = "http://172.21.7.51:5000/home";
+            // Get the current URL
+            var currentURL = window.location.href;
+    
+            // Extract the IP address from the current URL
+            var matches = currentURL.match(/^http:\/\/(\d+\.\d+\.\d+\.\d+):5000\/logged_in$/);
+    
+            if (matches && matches.length === 2) {
+                // Use the extracted IP address to construct the redirect URL
+                var ipAddress = matches[1];
+                window.location.href = "http://" + ipAddress + ":5000/home";
+            } else {
+                console.error("Failed to extract IP address from the URL:", currentURL);
+            }
         }, 2000); // 2000 milliseconds = 2 seconds
     </script>
+    
 
 {% endblock %}

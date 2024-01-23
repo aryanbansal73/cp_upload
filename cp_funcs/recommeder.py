@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import matplotlib.pyplot as plt
+import time
 
 
 def  get_rated_problems():
@@ -126,3 +127,66 @@ def dot(u, v):
   for i in range(len(u)):
     sum +=( u[i] * v[i] )*10
   return sum
+
+def make_selection_of_probs(user_problem_vector , problem_weight_matrix,prob_data_in_matrix,user_prob_data,problem_by_id_):
+  scores = [
+      dot(problem_tags, user_problem_vector)
+      for problem_tags in problem_weight_matrix
+  ]
+  selected = []
+  rating_sele = []
+  for index , id in enumerate(prob_data_in_matrix):
+    # print(index)
+    if(id not in user_prob_data):
+      if ((scores[index]<10 and scores[index] >=0   )  or (scores[index]<-20)  or (scores[index]<=0  and scores[index]>=-5) ):
+        rating = problem_by_id_[id][0]['rating']
+        rating_sele.append(rating)
+        pair= (rating,id)
+        selected.append(pair)
+
+  lis_of_viable_probs = defaultdict(list)
+  for i in selected:
+    lis_of_viable_probs[i[0]].append(i[1])
+  return lis_of_viable_probs
+
+def get_problems(rating , count,lis_of_viable_probs):
+  mean  = rating+100
+  percentage_count = [0.1 , 0.2 , 0.4 , .2 , .1]
+  recommended_probs = defaultdict(list)
+  for i  ,  per_count in  enumerate(percentage_count):
+    rating_val  = mean + 100*(i-2)
+    selec = random.sample(lis_of_viable_probs[rating_val]  , int(count*per_count))
+    recommended_probs[rating_val].append(selec)
+  return recommended_probs
+
+
+def working_mod(user_info):
+  handle = user_info['handle']
+  rated_problems =  get_rated_problems()
+  tags = get_tags(rated_problems)
+  problem_by_id_ = problem_by_id(rated_problems , tags)
+  qid = create_qid_tid((problem_by_id_))
+  user_prob_data = get_submission_info_indv(handle)
+  user_prob_matrix = make_user_prob_matrix(user_info, problem_by_id_  ,user_prob_data)
+  prob_data_in_matrix =[]
+  problem_weight_matrix = make_problem_weight_matrix(user_info ,problem_by_id_,prob_data_in_matrix)
+  user_problem_vector = make_user_prob_vector(user_prob_matrix)
+  lis_of_viable_probs = make_selection_of_probs(user_problem_vector,problem_weight_matrix,prob_data_in_matrix,user_prob_data,problem_by_id_)
+  return lis_of_viable_probs
+
+def final():
+  user_info = {'rating': 1320, 'handle': "Ur_BroGrammer"}
+  lis_of_viable_probs=working_mod(user_info)
+  rating = rating =( int((user_info['rating']+50)/100))*100
+
+  count = 10 
+  r = get_problems(rating,count,lis_of_viable_probs)
+  
+
+if __name__ == '__main__':
+    start_time = time.time()
+    final()
+    end_time = time.time()
+
+    elapsed_time = end_time - start_time
+    print(f"Time elapsed: {elapsed_time} seconds")
