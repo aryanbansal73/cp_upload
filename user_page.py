@@ -12,7 +12,6 @@ import os
 from dotenv import load_dotenv
 import sys, os.path
 dir_path = (os.path.abspath(os.path.join(os.path.dirname(__file__), ))+ '/cp_funcs/')
-print(dir_path)
 sys.path.append(dir_path)
 import main 
 
@@ -63,4 +62,4 @@ def sync_cf(cf_id):
         # main.module_func(cf_id ,  git_access_token ,  "test123")
         return render_template('process.html')
     else:
-        return redirect(url_for(user_page.options))
+        return redirect(url_for("login.login" ))
