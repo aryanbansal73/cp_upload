@@ -76,6 +76,7 @@ def sync_cf(cf_id):
         client = user_obj.give_db()
         records =  client["user"]["User"]
         sync.module_func(cf_id ,  git_access_token ,records,email,  "test123")
+        user_obj.close_db(client)
         return render_template('process.html')
     else:
         return redirect(url_for("login.login" ))

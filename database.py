@@ -16,6 +16,7 @@ class Util:
         client = pymongo.MongoClient(self.connection_url)
         return  client
     def close_db(self,client):
+        print("closed")
         client.close()
     def insert_doc(self, col_name, data):
         client = pymongo.MongoClient(self.connection_url)

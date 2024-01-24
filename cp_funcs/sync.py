@@ -73,14 +73,12 @@ def upload_solution(website, solution, repo):
 
 
 def codeforces_uploader(codeforces_username, repo,added_already,records):
-    print(added_already)
     failed_codeforces = []
     for solution in CodeForcesScraper.get_solutions(codeforces_username,added_already):
         if not upload_solution('CodeForces', solution, repo):
             #print("hi")
             failed_codeforces.append(solution)
         else :
-            print(solution["problem_code"])
             added_already.append(solution['problem_code'])
 
     for _ in range(3):
@@ -161,7 +159,7 @@ def module_func(codeforces_username ,access_token ,records ,email, repo_name = "
     #     # codechef_process = Process(target=codechef_uploader, args=(codechef_username, repo))
     #     # codechef_process.start()
     x = records.find_one({"email":email})
-    
+    added_already = x["codeforces_id_list"][codeforces_username]
     if added_already== None:
         added_already = []
     if codeforces_username:
