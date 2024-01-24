@@ -1,18 +1,17 @@
 from flask import Flask, redirect, url_for, session, render_template, request,flash , Blueprint  ,current_app
 import bcrypt
 import pymongo
-from database import connect_db
 import re 
 from src.token_1 import generate_confirmation_token, confirm_token
 from flask_mail import Message
 from flask_mail import Mail
 import datetime
-
 import os
 from dotenv import load_dotenv
+load_dotenv(override=True)
+from database import Util
 
-
-
+login_obj =  Util("user")
 
 
 login_blueprint = Blueprint('login', __name__)
@@ -24,7 +23,10 @@ login_blueprint = Blueprint('login', __name__)
 # login_blueprint.config['MAIL_PASSWORD'] = os.getenv('gmail_pass')
 # login_blueprint.config['MAIL_USE_TLS'] = False
 # login_blueprint.config['MAIL_USE_SSL'] = True
-records =  connect_db()
+
+db_name  = os.getenv("db_name")
+collection_name = os.getenv("collection_name")
+ 
 @login_blueprint.route("/", methods=['post', 'get'])
 def index():
     message = ''
@@ -45,8 +47,8 @@ def index():
         #     message = 'Password does not meet requirements.'
         #     return render_template('index.html', message=message)
         #if found in database showcase that it's found 
-        user_found = records.find_one({"user_name": user})
-        email_found = records.find_one({"email": email})
+        user_found = login_obj.search_doc("User", {"user_name":user})
+        email_found = login_obj.search_doc("User",{"email": email})
 
         if user_found:
             message = 'There already is a user by that name'
@@ -61,9 +63,9 @@ def index():
             #hash the password and encode it
             hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
             #assing them in a dictionary in key value pairs
-            user_input = {'user_name': user,'name':fullname, 'email': email, 'password': hashed ,  'confirmed': False , 'confirmed_on':None, "codeforces_id_list": []}
+            user_input = {'user_name': user,'name':fullname, 'email': email, 'password': hashed ,  'confirmed': False , 'confirmed_on':None, "codeforces_id_list": {}}
             #insert it in the record collection
-            records.insert_one(user_input)
+            login_obj.insert_doc("User" ,user_input)
             token  = generate_confirmation_token(email)
             print(token)
             confirm_url =  url_for('login.confirm_email' , token =  token, _external = True)
@@ -71,8 +73,8 @@ def index():
             html = render_template('auth_mail.html', confirm_url=confirm_url)
             subject = "Please confirm your email"
             #find the new created account and its email
-            user_data = records.find_one({"email": email})
-            send_email(user_data['email'], subject, html)
+            # user_data = records.find_one({"email": email})
+            # send_email(user_data['email'], subject, html)
             flash('A confirmation email has been sent via email.', 'success')
 
             #if registered redirect to logged in as the registered user
@@ -102,7 +104,7 @@ def login():
             message = 'The Email entered in not correct , correct and try again'
             return render_template('index.html', message=message)
         #check if email exists in database
-        user = records.find_one({"email": email})
+        user = login_obj.search_doc("User", {"email": email})
 
         if user:
             email_val = user['email']
@@ -147,7 +149,7 @@ def confirm_email(token):
         flash('The confirmation link is invalid or has expired.', 'danger')
         message ="The confirmation link is invalid or has expired."
         return render_template('confirm_pending.html' , message = message)
-    user =  records.find_one({"email":email})
+    user =  login_obj.search_doc("User",{"email":email})
     # print(user['confirmed'])
     if(user ==None ):
         message ="The confirmation link is invalid or has expired."
@@ -158,9 +160,8 @@ def confirm_email(token):
     else :
         user['confirmed'] = True 
         user['confirmed_on']= datetime.datetime.now()
-        # print(user)
-        records.update_one({'_id':user['_id']}, {'$set':user} ,  upsert= False) 
-        user1 =  records.find_one({"email":email})
+        login_obj.update_doc("User" , user ) 
+        user1 =  login_obj.search_doc("User",{"email":email})
         print(user1)
 
     return render_template('logged_in.html')

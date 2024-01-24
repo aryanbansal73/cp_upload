@@ -4,7 +4,6 @@ import requests
 import time
 import json
 from json.decoder import JSONDecodeError
-from database import connect_db
 from dotenv import load_dotenv
 import os
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
@@ -16,7 +15,6 @@ GYM_BASE_URL = 'https://codeforces.com/gym/'
 PROFILE_BASE_URL = 'https://codeforces.com/profile/'
 ACMSGURU_BASE_URL = 'https://codeforces.com/problemsets/acmsguru/'
 
-database = connect_db() 
 
 class Rank(NamedTuple):
     """Codeforces rank."""
@@ -51,7 +49,7 @@ def get_submission_info(username):
                 if len(str(submission["problem"]["contestId"])) <= 4 and len(submission["author"]["members"]) == 1:
                     yield {
                         'language': submission['programmingLanguage'],
-                        'problem_code': f'{submission["problem"]["contestId"]}{submission["problem"]["index"]}',
+                        'problem_code': f'{submission["problem"]["contestId"]}/{submission["problem"]["index"]}',
                         'solution_id': submission['id'],
                         'problem_name': submission['problem']['name'] if 'name' in submission['problem'] else '',
                         'problem_link': f'https://codeforces.com/contest/{submission["problem"]["contestId"]}/problem/{submission["problem"]["index"]}',
@@ -131,53 +129,30 @@ def get_submission_info_indv(username):
   return user_prob
 
 # def upload_to_mongo(problem_by_id_):
-#     i = 1 
-#     start_time = time.time()
-#     print("start")
-#     for key, value in problem_by_id_.items():
-#         # Extract the nested dictionary
-#         nested_dict = value[0]
+#     # print("start")
 
-#         # Flatten the nested dictionary
-#         flattened_dict = {'_id': key}
-#         flattened_dict.update(nested_dict)
+#     # Extract data for insert_many
+#     documents_to_insert = [{'_id': key, **value[0]} for key, value in problem_by_id_.items()]
 
-#         # Check if the document with the same _id already exists
+#     # Check if the documents with the same _id already exist
+#     existing_documents = database.find({'_id': {'$in': [doc['_id'] for doc in documents_to_insert]}})
 
-#         # If the document doesn't exist, insert it
-#         # if database.find_one({'_id': key}) == False  :
-#         database.update_one(flattened_dict)
-#         print(i)
-#         i+=1
+#     existing_ids = set(doc['_id'] for doc in existing_documents)
+
+#     # Filter out documents with existing _ids
+#     documents_to_insert = [doc for doc in documents_to_insert if doc['_id'] not in existing_ids]
+
+#     # If there are documents to insert, use insert_many
+#     if documents_to_insert:
+#         database.insert_many(documents_to_insert)
+#         print(f"{len(documents_to_insert)} documents inserted successfully.")
+#     else:
+#         print("No new documents to insert.")
 
 #     end_time = time.time()
-
 #     elapsed_time = end_time - start_time
-#     print(f"Time elapsed: {elapsed_time} seconds")
 
-def upload_to_mongo(problem_by_id_):
-    start_time = time.time()
-    # print("start")
-
-    # Extract data for insert_many
-    documents_to_insert = [{'_id': key, **value[0]} for key, value in problem_by_id_.items()]
-
-    # Check if the documents with the same _id already exist
-    existing_documents = database.find({'_id': {'$in': [doc['_id'] for doc in documents_to_insert]}})
-
-    existing_ids = set(doc['_id'] for doc in existing_documents)
-
-    # Filter out documents with existing _ids
-    documents_to_insert = [doc for doc in documents_to_insert if doc['_id'] not in existing_ids]
-
-    # If there are documents to insert, use insert_many
-    if documents_to_insert:
-        database.insert_many(documents_to_insert)
-        print(f"{len(documents_to_insert)} documents inserted successfully.")
-    else:
-        print("No new documents to insert.")
-
-    end_time = time.time()
-    elapsed_time = end_time - start_time
     # print(f"Time elapsed: {elapsed_time} seconds")
-upload_to_mongo(data_format_to_needed_form())
+# upload_to_mongo(data_format_to_needed_form())
+# data=  database.find()
+# print(type(data))

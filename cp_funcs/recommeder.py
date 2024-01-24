@@ -122,6 +122,7 @@ def final():
 
   count = 10 
   r = get_problems(rating,count,lis_of_viable_probs)
+  print(r)
   
 
 if __name__ == '__main__':

@@ -37,13 +37,18 @@ def get_code(driver):
     lines = driver.find_elements(By.CSS_SELECTOR, '#program-source-text > ol > li')
     return '\n'.join(line.text for line in lines)
 
-def get_solutions(username, all_info=None):
+def get_solutions(username , synced_list = None, all_info=None   ):
     try:
         if all_info is None:
             all_info = list(get_submission_info(username))
     except JSONDecodeError:
         logging.error("CodeForces API is currently unavailable. Please try again later.")
         return
+
+    if synced_list is None:
+        synced_list = []
+    print(synced_list)
+    all_info = [d for d in all_info if d['problem_code'] not in synced_list]
 
     sub_id_info = {info['link']: info for info in all_info}
 
