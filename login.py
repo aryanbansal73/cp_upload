@@ -1,32 +1,29 @@
-from flask import Flask, redirect, url_for, session, render_template, request,flash , Blueprint  ,current_app
+from flask import Flask, redirect, url_for, session, render_template, request,flash , Blueprint  
 import bcrypt
-import pymongo
 import re 
 from src.token_1 import generate_confirmation_token, confirm_token
 from flask_mail import Message
-from flask_mail import Mail
 import datetime
 import os
 from dotenv import load_dotenv
 load_dotenv(override=True)
 from database import Util
-
 login_obj =  Util("user")
-
+from extensions import mail
 
 login_blueprint = Blueprint('login', __name__)
 
 
-# login_blueprint.config['MAIL_SERVER']='smtp.gmail.com'
-# login_blueprint.config['MAIL_PORT'] = 465
-# login_blueprint.config['MAIL_USERNAME'] = os.getenv("gmail_id")
-# login_blueprint.config['MAIL_PASSWORD'] = os.getenv('gmail_pass')
-# login_blueprint.config['MAIL_USE_TLS'] = False
-# login_blueprint.config['MAIL_USE_SSL'] = True
-
 db_name  = os.getenv("db_name")
 collection_name = os.getenv("collection_name")
- 
+def send_email(to, subject, template):
+    msg = Message(
+        subject,
+        recipients=[to],
+        html=template,
+        sender='noreply@aryanbansal.space'
+    )
+    mail.send(msg)   
 @login_blueprint.route("/", methods=['post', 'get'])
 def index():
     message = ''
@@ -50,12 +47,12 @@ def index():
         user_found = login_obj.search_doc("User", {"user_name":user})
         email_found = login_obj.search_doc("User",{"email": email})
 
-        if user_found:
-            message = 'There already is a user by that name'
-            return render_template('index.html', message=message)
-        if email_found:
-            message = 'This email already exists in database'
-            return render_template('index.html', message=message)
+        # if user_found:
+        #     message = 'There already is a user by that name'
+        #     return render_template('index.html', message=message)
+        # if email_found:
+        #     message = 'This email already exists in database'
+        #     return render_template('index.html', message=message)
         if password1 != password2:
             message = 'Passwords should match!'
             return render_template('index.html', message=message)
@@ -73,15 +70,22 @@ def index():
             html = render_template('auth_mail.html', confirm_url=confirm_url)
             subject = "Please confirm your email"
             #find the new created account and its email
-            # user_data = records.find_one({"email": email})
-            # send_email(user_data['email'], subject, html)
+            user_data = login_obj.search_doc(collection_name,{"email": email})
+            send_email(user_data['email'] , subject , html)
             flash('A confirmation email has been sent via email.', 'success')
 
             #if registered redirect to logged in as the registered user
-            message ="waiting for id to be confirmed"
-            return render_template('confirm_pending.html' , message = message)
+            return redirect(url_for("login.wait_confirm"))
             # return render_template('logged_in.html', email=email)
     return render_template('index.html')
+
+
+
+@login_blueprint.route("/wait_confirm" , methods = ["GET","POST"])
+def wait_confirm():
+    message ="waiting for id to be confirmed"
+    return render_template('confirm_pending.html' , message = message)
+
 
 @login_blueprint.route('/logged_in')
 def logged_in():
@@ -92,6 +96,7 @@ def logged_in():
 
     else:
         return redirect(url_for("login.login"))
+
 @login_blueprint.route("/login", methods=["POST", "GET"])
 def login():
     message = 'Please login to your account'
@@ -130,6 +135,27 @@ def login():
     return render_template('login.html', message=message)
 
 
+@login_blueprint.route("/resend_confirm" , methods=["POST", "GET"])
+def resend_confirm():
+    if "email" in session:
+       
+        #uncomment to make the func work
+        email = session["email"]
+        token  = generate_confirmation_token(email)
+        print(token)
+        confirm_url =  url_for('login.confirm_email' , token =  token, _external = True)
+        # print(confirm_url)
+        html = render_template('auth_mail.html', confirm_url=confirm_url)
+        subject = "Please confirm your email"
+        #find the new created account and its email
+        user_data = login_obj.search_doc(collection_name,{"email": email})
+        # send_email(user_data['email'], subject, html)
+        send_email(user_data['email'] , subject , html)
+        flash('A confirmation email has been sent via email.', 'success')
+        #if registered redirect to logged in as the registered user
+        # message ="waiting for id to be confirmed"
+        return "yay"
+        # return redirect(url_for("login.wait_confirm"))
 
 @login_blueprint.route("/logout", methods=["POST", "GET"])
 def logout():
@@ -168,16 +194,7 @@ def confirm_email(token):
   
 
 
-def send_email(to, subject, template):
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=" sender='peter@mailtrap.io'"
-    )
-    with current_app.app_context():
-        mail = Mail()
-        mail.send(msg)    
+
 
 
 
