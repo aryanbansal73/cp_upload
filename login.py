@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session, render_template, request,flash , Blueprint  
+from flask import Flask, redirect, url_for, session, render_template, request,flash , Blueprint  ,jsonify
 import bcrypt
 import re 
 from src.token_1 import generate_confirmation_token, confirm_token
@@ -16,6 +16,18 @@ login_blueprint = Blueprint('login', __name__)
 
 db_name  = os.getenv("db_name")
 collection_name = os.getenv("collection_name")
+def success_response(data):
+    return jsonify({
+        'status': "success",
+        'data': data
+    })
+
+
+def error_response(data):
+    return jsonify({
+        'status': "error",
+        'data': str(data)
+    })
 def send_email(to, subject, template):
     msg = Message(
         subject,
@@ -55,7 +67,7 @@ def index():
         #     return render_template('index.html', message=message)
         if password1 != password2:
             message = 'Passwords should match!'
-            return render_template('index.html', message=message)
+            return success_response(message)
         else:
             #hash the password and encode it
             hashed = bcrypt.hashpw(password2.encode('utf-8'), bcrypt.gensalt())
@@ -75,7 +87,7 @@ def index():
             flash('A confirmation email has been sent via email.', 'success')
 
             #if registered redirect to logged in as the registered user
-            return redirect(url_for("login.wait_confirm"))
+            return success_response("change")
             # return render_template('logged_in.html', email=email)
     return render_template('index.html')
 
@@ -84,14 +96,14 @@ def index():
 @login_blueprint.route("/wait_confirm" , methods = ["GET","POST"])
 def wait_confirm():
     message ="waiting for id to be confirmed"
-    return render_template('confirm_pending.html' , message = message)
+    return success_response( message)
 
 
 @login_blueprint.route('/logged_in')
 def logged_in():
     if "email" in session:
         email = session["email"]
-        return render_template('logged_in.html', email=email)
+        return success_response(email)
         
 
     else:
@@ -127,12 +139,12 @@ def login():
                 if "email" in session:
                     return redirect(url_for("login.logged_in"))
                 message = 'Wrong password'
-                return render_template('login.html', message=message)
+                return  success_response(message)
         else:
             message = 'Email not found'
-            return render_template('login.html', message=message)
+            return  success_response(message)
         
-    return render_template('login.html', message=message)
+    return  success_response(message)
 
 
 @login_blueprint.route("/resend_confirm" , methods=["POST", "GET"])

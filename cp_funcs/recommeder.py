@@ -116,11 +116,11 @@ def working_mod(user_info):
   return lis_of_viable_probs
 
 def final():
-  user_info = {'rating': 1320, 'handle': "Ur_BroGrammer"}
+  user_info = {'rating': 1568, 'handle': "gabagopesh"}
   lis_of_viable_probs=working_mod(user_info)
   rating = rating =( int((user_info['rating']+50)/100))*100
 
-  count = 10 
+  count = 15 
   r = get_problems(rating,count,lis_of_viable_probs)
   print(r)
   
